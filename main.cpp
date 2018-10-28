@@ -1,207 +1,91 @@
+//40055006 Youlin Liu
 
 #include <iostream>
-#include<vector>
 #include <fstream>
-#include <sstream>
+#include <vector>
+#include <cstdlib>
+#include <algorithm>
+
 
 using namespace std;
-string toString(int n) {
-    stringstream ss;
-    ss << n;
-    return ss.str();
+
+int main(int argc, char* arg[]) {
+    ifstream input(arg[1]);
+    if(!input) {
+        cout << "you cannot open input file, please try another file" << endl;
+        return -1;
+    }
+
+    ofstream output(arg[2]);
+    if(!output){
+        cout << "you cannot write to output file, please try another file" << endl;
+        return -1;
+    }
+
+    int N;
+    input>>N;
+    for(int j=0;j<N;j++) {
+        int vertexs, edges;
+
+        input >> vertexs >> edges;
+
+        vector<vector<int> > weighted(vertexs, vector<int>(vertexs));
+
+
+        int allVertex[vertexs];
+        for(int i=0;i<vertexs;i++){
+            allVertex[i]=i;
+        }
+
+        for (int i = 0; i < edges; i++) {
+            int first, second, weight;
+            input >> first >> second >> weight;
+
+            weighted[first][second ] = weight;
+            weighted[second][first] = weight;
+        }
+        int path=2147483647;
+
+
+        int count=0;
+
+
+
+
+        do {
+
+            vector<int> cycle;
+
+            cycle.push_back(allVertex[0]);
+
+            for (int i = 1; i < vertexs; i++) {
+            //    cout<<allVertex[i]<<" ";
+                cycle.push_back(allVertex[i]);
+            }
+            cycle.push_back(allVertex[0]);
+            int tempcost=0;
+
+
+            for(int k=0;k<cycle.size()-1;k++){
+              //  cout<<k<<"->"<<k+1<<" "<<weighted[k][k+1]<<"   ";
+               int first=cycle[k];
+                int second=cycle[k+1];
+
+              //  cout<<first<<"->"<<second<<" "<<weighted[first][second]<<"   ";
+                tempcost+=weighted[first][second];
+            //    cout<<first<<"->"<<second<<" "<<weighted[first][second]<<"    cost: "<<tempcost;
+
+            }
+
+
+            if(tempcost<path){
+                path=tempcost;
+            }
+
+
+        } while (std::next_permutation(allVertex+1, allVertex + vertexs));
+       output<<path<<endl;
+    }
+
+
 }
-int length(vector<int>  nums, int total, vector<int> value);
-
-
-
-int main(int argc, char* argv[]) {
-
-
-
-
-    ifstream input(argv[1]);
-    if (!input) {
-        cout << "Cannot open your file!" << endl;
-    } else {
-
-        ofstream output(argv[2]);
-        if (!output) {
-            cout << "Cannot write to your file!" << endl;
-        }
-
-
-
-
-
-        int N;
-        input >> N;
-
-
-        for (int i = 0; i < N; i++) {
-            int m;
-            input >> m;
-
-            vector<int> nums(m);
-
-            for (int j = 0; j < m; j++) {
-
-                input >> nums[j];
-
-            }
-
-
-            int total;
-            input >> total;
-            vector<int> value(total+1);
-
-            value[0]=0;
-            for(int f=1;f<= total;f++) {
-                value[f] = 0;
-            }
-
-
-
-            int ans = length(nums, total,value);
-
-            if ( ans!= 0 ) {
-                output << ans<<endl;
-            } else {
-                output << "N"<<endl;
-
-
-            }
-        }
-    }
-    return 0;
-}
-int length( vector<int> nums, int total, vector<int> value) {
-
-    vector<int> newnums;
-    if(total==0){
-        int len=0;
-        for(int i=0;i<nums.size();i++){
-            if(total==nums[i]){
-                len++;
-            }
-        }
-        if(len!=0){
-            return 1;
-        }else{
-            return 0;
-        }
-    }
-
-
-    for(int i=1;i<=total;i++) {
-        for (int j = 0; j < nums.size(); j++) {
-            if (nums[j] == i) {
-                value[i] = 1;
-            }
-
-            string s = std::to_string(i);
-            int len = s.size();
-
-            int countconcate = 0;    //countconcate
-
-            for (char ctemp: s) {               //concatenate
-
-                for (int j = 0; j < nums.size(); j++) {
-
-                    if ((ctemp - '0') != nums[j]) {
-
-
-                    } else {
-                        countconcate++;
-
-                    }
-
-                }
-                if (countconcate == 0) { break; }
-
-
-            }
-
-            if (countconcate == len) {
-                value[i] = countconcate;
-                newnums.push_back(i);
-
-            }
-
-        }
-    }
-
-
-   // if(value[total]!=0) {return value[total];}
-
-
-    vector<int> secondnums;
-    secondnums=newnums;
-
-
-
-
-    for(int i=1;i<=total;i++) {
-
-
-            for (int j = 0; j < newnums.size(); j++) {
-                if(newnums[j]!=0) {
-
-                    if (i % newnums[j] == 0) {
-                        int temp = i / newnums[j];
-                        if (value[temp] != 0) {
-                            int tempvalue = value[temp] + 1 + value[newnums[j]];
-                            if (value[i] != 0 && value[i] > tempvalue) {
-                                value[i] = tempvalue;
-                                secondnums.push_back(i);
-
-                            } else if (value[i] == 0) {
-                                value[i] = tempvalue;
-                                secondnums.push_back(i);
-
-                            }
-
-                        }
-
-                    }
-                }
-        }
-    }
-
-    //if(value[total]!=0) {return value[total];}
-
-
-    for(int i=1;i<=total;i++) {
-        for (int j = 0; j < secondnums.size(); j++) {
-           // if(nums[j]!=0) {
-                if (i - nums[j] >= 0) {
-                    if (value[i - nums[j]] != 0) {
-                        int temp = value[nums[j]] + 1 + value[i - nums[j]];
-                        if (value[i] != 0 && value[i] > temp) {
-
-                            value[i] = temp;
-                        } else if (value[i] == 0) {
-                            value[i] = temp;
-                        }
-
-                    }
-
-                }
-
-        }
-    }
-    return value[total];
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
